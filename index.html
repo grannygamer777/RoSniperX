@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoSniperX</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        #rosniperx { margin: 20px; padding: 20px; border: 1px solid #ccc; border-radius: 5px; }
+        .input-field { padding: 10px; width: 200px; }
+        .btn-primary-md { padding: 10px; background-color: blue; color: white; border: none; cursor: pointer; }
+        #status { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div id="rosniperx">
+        <h2>RoSniperX</h2>
+        <form id="sniperForm">
+            <input type="text" id="username" class="input-field" placeholder="Username">
+            <button type="submit" id="searchBtn" class="btn-primary-md" disabled>Search</button>
+        </form>
+        <p id="status"></p>
+        <img id="thumbImage" height="40" style="display:none;" alt="User Avatar">
+        <button id="joinBtn" class="btn-primary-md" style="display:none;">Join</button>
+    </div>
+
+    <script>
+        document.getElementById('username').addEventListener('keyup', function() {
+            document.getElementById('searchBtn').disabled = this.value.length === 0;
+        });
+
+        document.getElementById('sniperForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const statusText = document.getElementById('status');
+            const joinBtn = document.getElementById('joinBtn');
+            const thumbImage = document.getElementById('thumbImage');
+            joinBtn.style.display = 'none';
+            statusText.innerText = 'Searching...';
+
+            const getJSON = async (url, args = {}) => {
+                args.headers = args.headers || {};
+                args.credentials = "include";
+                return fetch(url, args).then((r) => r.json());
+            };
+
+            const getUserId = async (name) => {
+                const data = await getJSON("https://users.roblox.com/v1/usernames/users", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ usernames: [name], excludeBannedUsers: true })
+                });
+                return data.data[0]?.id;
+            };
+
+            const getThumb = async (id) => {
+                const data = await getJSON(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${id}&format=Png&size=150x150`);
+                return data.data[0]?.imageUrl;
+            };
+
+            const userId = await getUserId(username);
+            if (!userId) {
+                statusText.innerText = "User not found";
+                return;
+            }
+
+            const thumbUrl = await getThumb(userId);
+            statusText.innerText = "User avatar found";
+            thumbImage.src = thumbUrl;
+            thumbImage.style.display = "block";
+        });
+    </script>
+</body>
+</html>
