@@ -7,7 +7,7 @@
     <style>
         body { font-family: Arial, sans-serif; }
         #rosniperx { margin: 20px; padding: 20px; border: 1px solid #ccc; border-radius: 5px; }
-        .input-field { padding: 10px; width: 200px; }
+        .input-field { padding: 10px; width: 200px; margin-bottom: 10px; display: block; }
         .btn-primary-md { padding: 10px; background-color: blue; color: white; border: none; cursor: pointer; }
         #status { margin-top: 10px; }
     </style>
@@ -17,6 +17,7 @@
         <h2>RoSniperX</h2>
         <form id="sniperForm">
             <input type="text" id="username" class="input-field" placeholder="Username">
+            <input type="text" id="gameId" class="input-field" placeholder="Game ID">
             <button type="submit" id="searchBtn" class="btn-primary-md" disabled>Search</button>
         </form>
         <p id="status"></p>
@@ -25,13 +26,18 @@
     </div>
 
     <script>
-        document.getElementById('username').addEventListener('keyup', function() {
-            document.getElementById('searchBtn').disabled = this.value.length === 0;
+        document.querySelectorAll('.input-field').forEach(input => {
+            input.addEventListener('keyup', function() {
+                document.getElementById('searchBtn').disabled = 
+                    document.getElementById('username').value.length === 0 ||
+                    document.getElementById('gameId').value.length === 0;
+            });
         });
 
         document.getElementById('sniperForm').addEventListener('submit', async function(event) {
             event.preventDefault();
             const username = document.getElementById('username').value;
+            const gameId = document.getElementById('gameId').value;
             const statusText = document.getElementById('status');
             const joinBtn = document.getElementById('joinBtn');
             const thumbImage = document.getElementById('thumbImage');
@@ -65,7 +71,7 @@
             }
 
             const thumbUrl = await getThumb(userId);
-            statusText.innerText = "User avatar found";
+            statusText.innerText = `User avatar found for Game ID: ${gameId}`;
             thumbImage.src = thumbUrl;
             thumbImage.style.display = "block";
         });
